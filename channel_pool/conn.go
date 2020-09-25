@@ -1,4 +1,4 @@
-package pool
+package channel_pool
 
 import (
 	"time"

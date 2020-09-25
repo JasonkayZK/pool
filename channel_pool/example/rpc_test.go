@@ -2,6 +2,7 @@ package example
 
 import (
 	"fmt"
+	"github.com/jasonkayzk/pool/channel_pool"
 	"math/rand"
 	"net"
 	"net/http"
@@ -9,9 +10,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/jasonkayzk/pool/channel_pool/errs"
-	. "github.com/jasonkayzk/pool/channel_pool/pool"
 )
 
 var (
@@ -117,7 +115,7 @@ func TestPool_Get(t *testing.T) {
 	}
 
 	_, err = p.Get()
-	if !errs.IsWaitConnectionTimeoutErr(err) {
+	if !channel_pool.IsWaitConnectionTimeoutErr(err) {
 		t.Errorf("Get error: %s", err)
 	}
 }
@@ -241,8 +239,8 @@ func TestPoolConcurrent2(t *testing.T) {
 	wg.Wait()
 }
 
-func newChannelPool() (Pool, error) {
-	ops := Options{
+func newChannelPool() (channel_pool.Pool, error) {
+	ops := channel_pool.Options{
 		InitialCap:  InitialCap,
 		MaxCap:      MaximumCap,
 		MaxIdle:     MaxIdleCap,
@@ -252,7 +250,7 @@ func newChannelPool() (Pool, error) {
 		IdleTimeout: IdleTimeout,
 		WaitTimeout: WaitTimeout,
 	}
-	return NewChannelPool(&ops)
+	return channel_pool.NewChannelPool(&ops)
 }
 
 type Number int

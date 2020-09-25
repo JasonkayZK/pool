@@ -1,4 +1,4 @@
-package pool
+package channel_pool
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jasonkayzk/pool/channel_pool/errs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -99,7 +98,7 @@ func NewChannelPool(options *Options) (Pool, error) {
 func (c *channelPool) Get() (interface{}, error) {
 	conns := c.getConns()
 	if conns == nil {
-		return nil, errs.NewDefaultClosedErr()
+		return nil, NewDefaultClosedErr()
 	}
 
 	for {
@@ -107,7 +106,7 @@ func (c *channelPool) Get() (interface{}, error) {
 		case wrapConn := <-conns:
 			{
 				if wrapConn == nil {
-					return nil, errs.NewDefaultClosedErr()
+					return nil, NewDefaultClosedErr()
 				}
 
 				// check timeout, if timeout remove
@@ -141,7 +140,7 @@ func (c *channelPool) Get() (interface{}, error) {
 					case ret, ok := <-req:
 						{
 							if !ok {
-								return nil, errs.NewMaxActiveConnectionErr("max active connection limit")
+								return nil, NewMaxActiveConnectionErr("max active connection limit")
 							}
 							if timeout := c.idleTimeout; timeout > 0 {
 								if ret.t.Add(timeout).Before(time.Now()) {
@@ -153,12 +152,12 @@ func (c *channelPool) Get() (interface{}, error) {
 							return ret.conn, nil
 						}
 					case <-time.After(c.waitTimeOut):
-						return nil, errs.NewWaitConnectionTimeoutErr("get active connection timeout")
+						return nil, NewWaitConnectionTimeoutErr("get active connection timeout")
 					}
 				}
 				if c.factory == nil {
 					c.mu.Unlock()
-					return nil, errs.NewDefaultClosedErr()
+					return nil, NewDefaultClosedErr()
 				}
 
 				conn, err := c.factory()
