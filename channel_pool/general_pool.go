@@ -74,7 +74,6 @@ func NewChannelPool(options *Options) (Pool, error) {
 		idleTimeout:  options.IdleTimeout,
 		maxActive:    options.MaxCap,
 		openingConns: options.InitialCap,
-
 	}
 
 	if options.Ping != nil {
@@ -103,6 +102,7 @@ func (c *channelPool) Get() (interface{}, error) {
 
 	for {
 		select {
+		// there has idle conn
 		case wrapConn := <-conns:
 			{
 				if wrapConn == nil {
@@ -128,6 +128,7 @@ func (c *channelPool) Get() (interface{}, error) {
 				return wrapConn.conn, nil
 			}
 		default:
+			// no idle conn
 			{
 				c.mu.Lock()
 				log.Debugf("openConn %v %v", c.openingConns, c.maxActive)
@@ -152,6 +153,9 @@ func (c *channelPool) Get() (interface{}, error) {
 							return ret.conn, nil
 						}
 					case <-time.After(c.waitTimeOut):
+						if err := c.Put(req); err != nil {
+							return nil, err
+						}
 						return nil, NewWaitConnectionTimeoutErr("get active connection timeout")
 					}
 				}
@@ -186,7 +190,7 @@ func (c *channelPool) Put(conn interface{}) error {
 		return c.CloseConn(conn)
 	}
 
-	//
+	// there has connect enquiry, directly return
 	if l := len(c.connReqs); l > 0 {
 		req := c.connReqs[0]
 		copy(c.connReqs, c.connReqs[1:])
@@ -198,10 +202,11 @@ func (c *channelPool) Put(conn interface{}) error {
 		c.mu.Unlock()
 		return nil
 	} else {
+		// no connect enquiry
 		select {
 		case c.conns <- &generalConn{
-			conn: conn, t:
-			time.Now(),
+			conn: conn,
+			t:    time.Now(),
 		}:
 			c.mu.Unlock()
 			return nil
