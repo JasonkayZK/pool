@@ -113,7 +113,7 @@ func TestPool_Get(t *testing.T) {
 	time.Sleep(time.Second)
 
 	if p.Len() != 0 {
-		t.Errorf("Get error. Expecting %d, got %d", InitialCap-1, p.Len())
+		t.Errorf("Get error. Expecting %d, got %d", 0, p.Len())
 	}
 
 	_, err = p.Get()
