@@ -2,12 +2,11 @@ package example
 
 import (
 	"fmt"
+	"github.com/jasonkayzk/pool/channel_pool"
 	"net/rpc"
 	"sync"
 	"testing"
 	"time"
-
-	. "github.com/jasonkayzk/pool/channel_pool/pool"
 )
 
 const (
@@ -43,7 +42,7 @@ func TestRpcBenchmark(t *testing.T) {
 	wg.Wait()
 }
 
-func poolMethod(p *Pool, args *Args) {
+func poolMethod(p *channel_pool.Pool, args *Args) {
 	conn, _ := (*p).Get()
 	cli := conn.(*rpc.Client)
 	defer (*p).Put(conn)

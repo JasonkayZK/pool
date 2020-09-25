@@ -13,6 +13,12 @@
 
 ### 基本用法
 
+通过下面的方式引入本仓库即可：
+
+```bash
+go get -u github.com/jasonkayzk/pool/channel_pool
+```
+
 #### 创建协程池
 
 使用`NewChannelPool`创建一个协程池：

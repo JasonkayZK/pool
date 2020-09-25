@@ -1,4 +1,4 @@
-package errs
+package channel_pool
 
 /*
 	A error type for invoke method on closed pool
